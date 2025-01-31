@@ -22,4 +22,5 @@ public class UserDto {
     private String career;
     private Boolean actualRegistered;
     private List<Role> roles;
+    private CampusDto campus;
 }

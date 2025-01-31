@@ -15,6 +15,9 @@ public class User {
     @Id
     @Column("id_user")
     private Long idUser;
+
+    @Column("id_campus")
+    private Long idCampus;
     private String username;
     private String password;
     private String name;
