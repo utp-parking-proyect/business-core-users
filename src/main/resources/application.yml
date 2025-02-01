@@ -1,6 +1,8 @@
+server:
+  port: 8080
 spring:
   application:
-    name: business-users
+    name: users-service
   r2dbc:
     url: r2dbc:mariadb://localhost:${DB_MARIADB_PORT}/db_utp_parking?serverTimezone=UTC
     username: ${DB_MARIADB_USERNAME}
@@ -15,8 +17,6 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MariaDBDialect
-server:
-  port: 8080
 eureka:
   client:
     serviceUrl:
