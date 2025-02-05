@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.utp</groupId>
     <artifactId>business-users</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <name>business-users</name>
     <description>business-users</description>
     <url/>
