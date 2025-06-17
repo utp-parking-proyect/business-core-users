@@ -14,20 +14,20 @@ import reactor.core.publisher.Mono;
 @RestController
 public class UserController {
 
-    private final UserService userService;
+  private final UserService userService;
 
-    @GetMapping
-    public Flux<UserDto> getAllUsers() {
-        return userService.findAll();
-    }
+  @GetMapping
+  public Flux<UserDto> getAllUsers() {
+    return userService.findAll();
+  }
 
-    @GetMapping("/{id}")
-    public Mono<UserDto> getUserById(@PathVariable Long id) {
-        return userService.findById(id);
-    }
+  @GetMapping("/{id}")
+  public Mono<UserDto> getUserById(@PathVariable Long id) {
+    return userService.findById(id);
+  }
 
-    @GetMapping("/username/{username}")
-    public Mono<UserLoginDto> getUserByUsername(@PathVariable String username) {
-        return userService.findByUsername(username);
-    }
+  @GetMapping("/username/{username}")
+  public Mono<UserLoginDto> getUserByUsername(@PathVariable String username) {
+    return userService.findByUsername(username);
+  }
 }

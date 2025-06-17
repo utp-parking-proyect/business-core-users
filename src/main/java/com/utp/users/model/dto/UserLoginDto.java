@@ -13,15 +13,15 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserLoginDto {
-    private Long idUser;
-    private String username;
-    private String password;
-    private String name;
-    private String lastname;
-    private String dni;
-    private String institutionalEmail;
-    private String career;
-    private Boolean actualRegistered;
-    private List<Role> roles;
-    private CampusDto campus;
+  private Long idUser;
+  private String username;
+  private String password;
+  private String name;
+  private String lastname;
+  private String dni;
+  private String institutionalEmail;
+  private String career;
+  private Boolean actualRegistered;
+  private List<Role> roles;
+  private CampusDto campus;
 }

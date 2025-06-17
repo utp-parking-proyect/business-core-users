@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CampusDto {
-    private Long idCampus;
-    private String nameCampus;
+  private Long idCampus;
+  private String nameCampus;
 }

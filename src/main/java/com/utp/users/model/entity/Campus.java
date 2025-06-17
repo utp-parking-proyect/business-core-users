@@ -12,10 +12,10 @@ import org.springframework.data.relational.core.mapping.Table;
 @NoArgsConstructor
 @Table("campus")
 public class Campus {
-    @Id
-    @Column("id_campus")
-    private Long idCampus;
+  @Id
+  @Column("id_campus")
+  private Long idCampus;
 
-    @Column("name_campus")
-    private String nameCampus;
+  @Column("name_campus")
+  private String nameCampus;
 }
