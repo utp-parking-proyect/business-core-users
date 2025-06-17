@@ -12,12 +12,12 @@ import org.springframework.data.relational.core.mapping.Table;
 @NoArgsConstructor
 @Table("user_roles")
 public class UserRole {
-    @Id
-    private Long id;
+  @Id
+  private Long id;
 
-    @Column("id_role")
-    private Long idRole;
+  @Column("id_role")
+  private Long idRole;
 
-    @Column("id_user")
-    private Long idUser;
+  @Column("id_user")
+  private Long idUser;
 }
