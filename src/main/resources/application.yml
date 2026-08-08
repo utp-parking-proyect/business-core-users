@@ -23,3 +23,8 @@ eureka:
       defaultZone: http://localhost:${EUREKA_SERVER_PORT}/eureka/
   instance:
     instanceId: ${spring.cloud.client.hostname}:${spring.application.name}:${random.value}
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    url: /openapi/bs-utp-users-v1.yaml
