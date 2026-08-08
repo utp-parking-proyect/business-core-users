@@ -1,14 +1,14 @@
 package com.utp.users.service;
 
-import com.utp.users.model.dto.UserDto;
-import com.utp.users.model.dto.UserLoginDto;
-import reactor.core.publisher.Flux;
+import com.utp.users.model.dto.UserLoginResponse;
+import com.utp.users.model.dto.UserPageResponse;
+import com.utp.users.model.dto.UserResponse;
 import reactor.core.publisher.Mono;
 
 public interface UserService {
-  Flux<UserDto> findAll();
+  Mono<UserPageResponse> findAll(int page, int size);
 
-  Mono<UserDto> findById(Long id);
+  Mono<UserResponse> findById(Long id);
 
-  Mono<UserLoginDto> findByUsername(String username);
+  Mono<UserLoginResponse> findByUsername(String username);
 }
