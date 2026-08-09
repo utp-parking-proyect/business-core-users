@@ -9,4 +9,7 @@ import reactor.core.publisher.Mono;
 public interface UserRepository extends R2dbcRepository<User, Long> {
   Mono<User> findByUsername(String username);
   Flux<User> findAllBy(Pageable pageable);
+  Mono<Boolean> existsByUsername(String username);
+  Mono<Boolean> existsByDni(String dni);
+  Mono<Boolean> existsByInstitutionalEmail(String institutionalEmail);
 }

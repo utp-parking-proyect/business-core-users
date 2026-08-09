@@ -4,19 +4,12 @@ spring:
   application:
     name: users-service
   r2dbc:
-    url: r2dbc:mariadb://localhost:${DB_PORT}/db_utp_parking?serverTimezone=UTC
+    url: r2dbc:postgresql://localhost:${DB_PORT}/db_utp_portal
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
   sql:
     init:
       mode: always
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MariaDBDialect
 eureka:
   client:
     serviceUrl:
