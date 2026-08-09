@@ -48,6 +48,44 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserPageResponse"
+    post:
+      tags: [ Users ]
+      operationId: registerUser
+      summary: Registrar un nuevo usuario
+      description: >
+        Crea un usuario a partir de los datos proporcionados. La contraseña se recibe en
+        texto plano y se almacena como un hash seguro; nunca se devuelve en la respuesta.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRegisterRequest"
+      responses:
+        "201":
+          description: Usuario registrado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "400":
+          description: Los datos proporcionados no son válidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiException"
+        "404":
+          description: No existe un campus con el id indicado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiException"
+        "409":
+          description: Ya existe un usuario con el mismo username, dni o institutionalEmail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiException"
   /{id}:
     get:
       tags: [ Users ]
@@ -70,6 +108,81 @@ paths:
                 $ref: "#/components/schemas/UserResponse"
         "404":
           description: No existe un usuario con ese id
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiException"
+  /{id}/roles/{idRole}:
+    put:
+      tags: [ Users ]
+      operationId: assignRole
+      summary: Asignar un rol a un usuario
+      description: >
+        Asigna el rol indicado al usuario. Operación idempotente: si el usuario ya tiene
+        el rol, no tiene efecto y simplemente devuelve el usuario con su estado actual.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador del usuario
+          schema:
+            type: integer
+            format: int64
+        - name: idRole
+          in: path
+          required: true
+          description: Identificador del rol a asignar
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Rol asignado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "404":
+          description: No existe un usuario o un rol con el id indicado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiException"
+    delete:
+      tags: [ Users ]
+      operationId: unassignRole
+      summary: Quitar un rol a un usuario
+      description: >
+        Quita el rol indicado del usuario. Operación idempotente: si el usuario no tenía
+        el rol, no tiene efecto y simplemente devuelve el usuario con su estado actual.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador del usuario
+          schema:
+            type: integer
+            format: int64
+        - name: idRole
+          in: path
+          required: true
+          description: Identificador del rol a quitar
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Rol removido correctamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "404":
+          description: No existe un usuario con el id indicado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiException"
   /username/{username}:
     get:
       tags: [ Users ]
@@ -92,6 +205,10 @@ paths:
                 $ref: "#/components/schemas/UserLoginResponse"
         "404":
           description: No existe un usuario con ese nombre de usuario
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiException"
 components:
   schemas:
     Role:
@@ -150,6 +267,59 @@ components:
           properties:
             password:
               type: string
+    UserRegisterRequest:
+      type: object
+      description: Datos requeridos para registrar un nuevo usuario
+      required:
+        - username
+        - password
+        - name
+        - lastname
+        - dni
+        - institutionalEmail
+        - career
+        - idCampus
+      properties:
+        username:
+          type: string
+          minLength: 1
+          maxLength: 50
+          x-field-extra-annotation: "@NotBlank @Size(max = 50)"
+        password:
+          type: string
+          description: Contraseña en texto plano; el servicio la hashea antes de persistirla
+          minLength: 8
+          maxLength: 72
+          x-field-extra-annotation: "@NotBlank @Size(min = 8, max = 72)"
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          x-field-extra-annotation: "@NotBlank @Size(max = 100)"
+        lastname:
+          type: string
+          minLength: 1
+          maxLength: 100
+          x-field-extra-annotation: "@NotBlank @Size(max = 100)"
+        dni:
+          type: string
+          pattern: "^[0-9]{8}$"
+          x-field-extra-annotation: "@NotBlank @Pattern(regexp = \"^[0-9]{8}$\")"
+        institutionalEmail:
+          type: string
+          format: email
+          maxLength: 150
+          x-field-extra-annotation: "@NotBlank @Email @Size(max = 150)"
+        career:
+          type: string
+          minLength: 1
+          maxLength: 100
+          x-field-extra-annotation: "@NotBlank @Size(max = 100)"
+        idCampus:
+          type: integer
+          format: int64
+          description: Identificador del campus al que pertenece el usuario
+          x-field-extra-annotation: "@NotNull"
     UserPageResponse:
       type: object
       description: Página de usuarios junto con la información de paginación
@@ -174,3 +344,37 @@ components:
           type: integer
           format: int32
           description: Cantidad total de páginas disponibles
+    ApiException:
+      title: ApiException
+      type: object
+      description: Datos del error de sistema.
+      properties:
+        description:
+          type: string
+          description: Descripción del error de sistema
+          example: El username ya está registrado
+        errorType:
+          type: string
+          description: Tipo de error de sistema
+          example: FUNCTIONAL
+        exceptionDetails:
+          type: array
+          description: Lista de detalles del error
+          items:
+            $ref: "#/components/schemas/ApiExceptionDetail"
+        properties:
+          type: object
+          description: Lista de propiedades especiales.
+    ApiExceptionDetail:
+      title: ApiExceptionDetail
+      type: object
+      description: Datos del error técnico.
+      properties:
+        component:
+          type: string
+          description: Nombre del componente de falla
+          example: business-core-users
+        description:
+          type: string
+          description: Descripción del detalle
+          example: El campo 'dni' debe tener 8 dígitos

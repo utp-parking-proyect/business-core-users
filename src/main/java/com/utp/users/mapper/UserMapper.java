@@ -1,6 +1,7 @@
 package com.utp.users.mapper;
 
 import com.utp.users.model.dto.UserLoginResponse;
+import com.utp.users.model.dto.UserRegisterRequest;
 import com.utp.users.model.dto.UserResponse;
 import com.utp.users.model.entity.Campus;
 import com.utp.users.model.entity.Role;
@@ -21,4 +22,9 @@ public interface UserMapper {
   @Mapping(target = "roles", source = "roles")
   @Mapping(target = "campus", source = "campus")
   UserLoginResponse toUserLoginResponse(User user, List<Role> roles, Campus campus);
+
+  @Mapping(target = "idUser", ignore = true)
+  @Mapping(target = "password", ignore = true)
+  @Mapping(target = "actualRegistered", ignore = true)
+  User toEntity(UserRegisterRequest request);
 }
