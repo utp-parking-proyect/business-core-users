@@ -44,7 +44,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ModelApiException> handleUnexpectedError(Exception ex) {
-    log.error("Unexpected error", ex);
+    log.error("Error inesperado", ex);
 
     return ResponseEntity.internalServerError().body(ModelApiException.builder()
         .description("Ocurrió un error inesperado")
