@@ -2,7 +2,9 @@ server:
   port: 9001
 spring:
   application:
-    name: users-service
+    name: business-core-portal
+  webflux:
+    base-path: /utp-portal/v1
   r2dbc:
     url: r2dbc:postgresql://localhost:${DB_PORT}/db_utp_portal
     username: ${DB_USERNAME}
@@ -20,4 +22,4 @@ springdoc:
   api-docs:
     enabled: false
   swagger-ui:
-    url: /openapi/bs-utp-users-v1.yaml
+    url: /openapi/bs-utp-portal-v1.yaml
