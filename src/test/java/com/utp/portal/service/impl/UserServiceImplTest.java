@@ -12,6 +12,7 @@ import com.utp.portal.repository.CampusRepository;
 import com.utp.portal.repository.RoleRepository;
 import com.utp.portal.repository.UserRepository;
 import com.utp.portal.repository.UserRoleRepository;
+import com.utp.portal.util.security.AuthenticatedUserProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -36,6 +37,7 @@ class UserServiceImplTest {
   private RoleRepository roleRepository;
   private CampusRepository campusRepository;
   private PasswordEncoder passwordEncoder;
+  private AuthenticatedUserProvider authenticatedUserProvider;
   private UserServiceImpl userService;
 
   @BeforeEach
@@ -45,13 +47,14 @@ class UserServiceImplTest {
     roleRepository = Mockito.mock(RoleRepository.class);
     campusRepository = Mockito.mock(CampusRepository.class);
     passwordEncoder = Mockito.mock(PasswordEncoder.class);
+    authenticatedUserProvider = Mockito.mock(AuthenticatedUserProvider.class);
 
     UserMapperImpl userMapper = new UserMapperImpl();
     ReflectionTestUtils.setField(userMapper, "campusMapper", new CampusMapperImpl());
     ReflectionTestUtils.setField(userMapper, "roleMapper", new RoleMapperImpl());
 
     userService = new UserServiceImpl(userRepository, userRoleRepository, roleRepository, campusRepository,
-        userMapper, passwordEncoder);
+        userMapper, passwordEncoder, authenticatedUserProvider);
   }
 
   private User sampleUser() {
@@ -140,6 +143,37 @@ class UserServiceImplTest {
     when(userRepository.findById(99L)).thenReturn(Mono.empty());
 
     StepVerifier.create(userService.findById(99L))
+        .verifyComplete();
+  }
+
+  @Test
+  void findAuthenticated_resolvesUserFromJwtUserIdClaim() {
+    User user = sampleUser();
+
+    when(authenticatedUserProvider.getAuthenticatedUserId()).thenReturn(Mono.just(1L));
+    when(userRepository.findById(1L)).thenReturn(Mono.just(user));
+    when(userRoleRepository.findAllByIdUser(1L)).thenReturn(Flux.just(new UserRole(1L, 100L, 1L)));
+    when(roleRepository.findById(100L)).thenReturn(Mono.just(new Role(100L, "ROLE_STUDENT")));
+    when(campusRepository.findById(10L)).thenReturn(Mono.just(new Campus(10L, "Main Campus")));
+
+    StepVerifier.create(userService.findAuthenticated())
+        .assertNext(dto -> {
+          assert dto.getIdUser().equals(1L);
+          assert dto.getUsername().equals("jdoe");
+          assert dto.getRoles().get(0).getName().equals("ROLE_STUDENT");
+          assert dto.getCampus().getNameCampus().equals("Main Campus");
+        })
+        .verifyComplete();
+
+    Mockito.verify(userRepository).findById(1L);
+  }
+
+  @Test
+  void findAuthenticated_completesEmpty_whenTokenUserNoLongerExists() {
+    when(authenticatedUserProvider.getAuthenticatedUserId()).thenReturn(Mono.just(99L));
+    when(userRepository.findById(99L)).thenReturn(Mono.empty());
+
+    StepVerifier.create(userService.findAuthenticated())
         .verifyComplete();
   }
 
