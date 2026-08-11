@@ -34,6 +34,13 @@ public class UserController implements UsersApi {
   }
 
   @Override
+  public Mono<ResponseEntity<UserResponse>> getCurrentUser(ServerWebExchange exchange) {
+    return userService.findAuthenticated()
+        .map(ResponseEntity::ok)
+        .defaultIfEmpty(ResponseEntity.notFound().build());
+  }
+
+  @Override
   public Mono<ResponseEntity<UserLoginResponse>> getUserByUsername(String username,
                                                                    ServerWebExchange exchange) {
     return userService.findByUsername(username)

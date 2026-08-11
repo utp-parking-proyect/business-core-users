@@ -14,6 +14,7 @@ import com.utp.portal.repository.RoleRepository;
 import com.utp.portal.repository.UserRepository;
 import com.utp.portal.repository.UserRoleRepository;
 import com.utp.portal.service.UserService;
+import com.utp.portal.util.security.AuthenticatedUserProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -38,6 +39,7 @@ public class UserServiceImpl implements UserService {
   private final CampusRepository campusRepository;
   private final UserMapper userMapper;
   private final PasswordEncoder passwordEncoder;
+  private final AuthenticatedUserProvider authenticatedUserProvider;
 
   @Override
   public Mono<UserPageResponse> findAll(int page, int size) {
@@ -66,6 +68,11 @@ public class UserServiceImpl implements UserService {
   @Override
   public Mono<UserResponse> findById(Long id) {
     return userRepository.findById(id).flatMap(this::toUserResponse);
+  }
+
+  @Override
+  public Mono<UserResponse> findAuthenticated() {
+    return authenticatedUserProvider.getAuthenticatedUserId().flatMap(this::findById);
   }
 
   @Override

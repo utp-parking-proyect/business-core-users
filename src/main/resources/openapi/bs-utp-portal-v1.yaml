@@ -16,6 +16,8 @@ tags:
     description: Consulta de usuarios registrados
   - name: Cycles
     description: Consulta del ciclo académico/institucional
+security:
+  - bearerAuth: []
 paths:
   /cycles/current:
     get:
@@ -33,6 +35,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CycleResponse"
+        "401":
+          description: No se envió un token válido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiException"
         "404":
           description: No existe un ciclo activo configurado
           content:
@@ -59,6 +67,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CycleResponse"
+        "401":
+          description: No se envió un token válido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiException"
         "404":
           description: No existe un ciclo con ese id
           content:
@@ -138,11 +152,47 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiException"
+  /users/me:
+    get:
+      tags: [ Users ]
+      operationId: getCurrentUser
+      summary: Obtener el usuario autenticado
+      description: >
+        Devuelve la información pública del usuario dueño del token enviado en la cabecera
+        `Authorization`. El identificador se resuelve en el backend a partir del claim
+        `userId` del JWT: el cliente no envía id, username ni dni. La respuesta nunca
+        incluye credenciales.
+      responses:
+        "200":
+          description: Usuario autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "401":
+          description: No se envió un token válido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiException"
+        "404":
+          description: El usuario del token ya no existe
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiException"
   /users/{id}:
     get:
       tags: [ Users ]
       operationId: getUserById
       summary: Obtener un usuario por id
+      description: >
+        Devuelve la información pública de un usuario. Un usuario autenticado solo puede
+        consultarse a sí mismo (`id` igual al claim `userId` de su JWT); consultar a otro
+        usuario requiere el rol `ROLE_SAE`, que lo necesita para revisar solicitudes de
+        UTP+ Parking. La autorización se resuelve en el backend, antes de llegar al
+        controlador, por lo que una consulta no autorizada responde `403` sin revelar si
+        el usuario existe.
       parameters:
         - name: id
           in: path
@@ -158,6 +208,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserResponse"
+        "401":
+          description: No se envió un token válido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiException"
+        "403":
+          description: El usuario autenticado no puede consultar ese id
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiException"
         "404":
           description: No existe un usuario con ese id
           content:
@@ -245,6 +307,12 @@ paths:
         filtrados por campus. Pensado para que otros microservicios resuelvan, por
         ejemplo, qué Personal SAE de un campus puede revisar una solicitud, sin
         depender de paginar la lista completa de usuarios.
+
+
+        Exige token, pero no un rol concreto: `business-parking-request` lo consulta
+        para repartir la carga entre revisores mientras atiende la solicitud de un
+        estudiante, propagando el token de ese estudiante. Restringirlo a `ROLE_SAE`
+        impediría crear solicitudes.
       parameters:
         - name: roleName
           in: path
@@ -268,12 +336,24 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/UserResponse"
+        "401":
+          description: No se envió un token válido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiException"
   /users/username/{username}:
     get:
       tags: [ Users ]
       operationId: getUserByUsername
       summary: Obtener un usuario, incluyendo sus credenciales, por nombre de usuario
-      description: Pensado para ser consumido por un servicio de autenticación/gateway.
+      description: >
+        Endpoint exclusivo de comunicación entre servicios: es el único que devuelve
+        `UserLoginResponse`, con el hash de la contraseña. Exige un token que contenga la
+        autoridad `ROLE_INTERNAL_SERVICE`, que `authentication-service` se autofirma durante
+        el login (cuando todavía no existe un token de usuario) y que ningún usuario puede
+        obtener, porque no corresponde a ningún rol de la base de datos. Ningún token de
+        usuario final —incluido `ROLE_SAE`— tiene acceso.
       parameters:
         - name: username
           in: path
@@ -288,6 +368,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserLoginResponse"
+        "401":
+          description: No se envió un token válido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiException"
+        "403":
+          description: El token no pertenece a un servicio interno autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiException"
         "404":
           description: No existe un usuario con ese nombre de usuario
           content:
@@ -295,6 +387,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApiException"
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      description: 'Token de Authorización, header Authorization, ejemplo: Bearer 363536363jjxnj63633611'
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     Role:
       type: object

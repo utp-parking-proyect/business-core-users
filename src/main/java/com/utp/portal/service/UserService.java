@@ -10,6 +10,7 @@ import reactor.core.publisher.Mono;
 public interface UserService {
   Mono<UserPageResponse> findAll(int page, int size);
   Mono<UserResponse> findById(Long id);
+  Mono<UserResponse> findAuthenticated();
   Mono<UserLoginResponse> findByUsername(String username);
   Mono<UserResponse> register(UserRegisterRequest request);
   Mono<UserResponse> assignRole(Long idUser, Long idRole);
