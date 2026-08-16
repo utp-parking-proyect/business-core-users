@@ -39,6 +39,7 @@ class UserControllerSecurityTest {
 
   private static final String ROLE_STUDENT = "ROLE_STUDENT";
   private static final String ROLE_SAE = "ROLE_SAE";
+  private static final String ROLE_SECURITY = "ROLE_SECURITY";
   private static final String ROLE_INTERNAL_SERVICE = "ROLE_INTERNAL_SERVICE";
 
   @Autowired
@@ -152,6 +153,19 @@ class UserControllerSecurityTest {
 
     webTestClient.get().uri("/users/25")
         .header("Authorization", "Bearer " + tokenFor(10L, ROLE_SAE))
+        .exchange()
+        .expectStatus().isOk()
+        .expectBody()
+        .jsonPath("$.idUser").isEqualTo(25)
+        .jsonPath("$.password").doesNotExist();
+  }
+
+  @Test
+  void getUserById_returns200_whenSecurityStaffRequestsAnotherId() {
+    when(userService.findById(25L)).thenReturn(Mono.just(sampleResponse(25L)));
+
+    webTestClient.get().uri("/users/25")
+        .header("Authorization", "Bearer " + tokenFor(10L, ROLE_SECURITY))
         .exchange()
         .expectStatus().isOk()
         .expectBody()
